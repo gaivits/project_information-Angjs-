@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="th" ng-app="researchApp">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Project Information</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-messages.min.js"></script>
+</head>
+
+<body ng-controller="FormController">
+
+    <div class="container mt-4 mb-5">
+        <h2 class="mb-4">ข้อมูลทั่วไป</h2>
+
+        <form name="researchForm" ng-submit="submitForm()">
+            <div class="form-group">
+                <label>ชื่อโครงการภาษาไทย:</label>
+                <input type="text" class="form-control" placeholder="ชื่อโครงการภาษาไทย" ng-model="form.projectNameTh"
+                    name="projectNameTh" ng-pattern="/^[\u0E00-\u0E7F0-9\s.,!?-]*$/">
+                <div ng-messages="researchForm.projectNameTh.$error" ng-if="researchForm.projectNameTh.$dirty">
+                    <div ng-message="pattern" class="text-danger">โปรดกรอกเฉพาะตัวอักษรภาษาไทย ตัวเลข ช่องว่าง
+                        และเครื่องหมายวรรคตอนพื้นฐาน</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>ชื่อโครงการภาษาอังกฤษ:</label>
+                <input type="text" class="form-control" placeholder="ชื่อโครงการภาษาอังกฤษ"
+                    ng-model="form.projectNameEn" name="projectNameEn" ng-pattern="/^[ -~]*$/">
+                <div ng-messages="researchForm.projectNameEn.$error" ng-if="researchForm.projectNameEn.$dirty">
+                    <div ng-message="pattern" class="text-danger">โปรดกรอกเฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข
+                        และสัญลักษณ์พิเศษ (ASCII Printable Characters)</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>เลขที่สัญญา:</label>
+                <input type="text" placeholder="เลขที่สัญญา" class="form-control" ng-model="form.contractNumber">
+            </div>
+
+            <div class="form-group">
+                <label>ปีงบประมาณ:</label>
+                <select class="form-control" ng-model="form.budgetYear" name="budgetYear" required>
+                    <option value="">-- เลือกปีงบประมาณ --</option>
+                    <option ng-repeat="year in budgetYears" value="{{year}}">{{year}}</option>
+                </select>
+                <div ng-messages="researchForm.budgetYear.$error" ng-if="researchForm.budgetYear.$dirty">
+                    <div ng-message="required" class="text-danger">กรุณาเลือกปีงบประมาณ</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>ระบุชื่อมหาวิทยาลัย:</label>
+                <input type="text" class="form-control" ng-model="form.university">
+            </div>
+
+            <div class="form-group">
+                <label class="d-block">คณะผู้วิจัย:</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" ng-model="form.researcherAffiliationType"
+                        value="internal">
+                    <label class="form-check-label">ภายในมหาวิทยาลัย</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" ng-model="form.researcherAffiliationType"
+                        value="external">
+                    <label class="form-check-label">ภายนอกมหาวิทยาลัย</label>
+                </div>
+
+                <div ng-if="form.researcherAffiliationType === 'internal'">
+                    <select class="form-control mt-2" ng-model="form.faculty" ng-options="f for f in faculties">
+                        <option value="">-- เลือกคณะ --</option>
+                    </select>
+                </div>
+
+                <div ng-if="form.researcherAffiliationType === 'external'">
+                    <input type="text" class="form-control mt-2" ng-model="form.externalUniversityName"
+                        placeholder="ระบุ ชื่อมหาวิทยาลัยภายนอก">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="d-block">แหล่งทุนวิจัย:</label>
+                <select class="form-control" ng-model="form.fundingSource">
+                    <option value="">-- เลือกแหล่งทุน --</option>
+                    <option ng-repeat="source in fundingSources" ng-value="source.value">{{ source.label }}</option>
+                    <option value="other">อื่นๆ ระบุ...........</option>
+                </select>
+
+                <div ng-if="form.fundingSource === 'other'" class="mt-2">
+                    <input type="text" class="form-control" ng-model="form.otherFundingSource"
+                        placeholder="ระบุแหล่งทุนอื่น">
+                </div>
+            </div>
+
+            <h4 class="mt-4">ตำแหน่ง</h4>
+            <div class="mb-4">
+                <div class="form-check mb-2" ng-repeat="roleOpt in roles">
+                    <input type="radio" class="form-check-input" ng-model="form.role.selected" ng-value="roleOpt.value">
+                    <label class="form-check-label">{{ roleOpt.label }}</label>
+                    <input type="number" class="form-control mt-1" ng-model="roleOpt.percent" placeholder="%"
+                        ng-show="form.role.selected === roleOpt.value">
+                    <div class="row mt-1" ng-if="roleOpt.value === 'อื่นๆ' && form.role.selected === 'อื่นๆ'">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" ng-model="roleOpt.otherRoleText"
+                                placeholder="ระบุตำแหน่งอื่นๆ">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mt-4">ข้อมูลนักวิจัย</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ชื่อ-สกุล</th>
+                            <th>หน่วยงาน</th>
+                            <th>สังกัด/คณะ</th>
+                            <th>ตำแหน่ง</th>
+                            <th>สัดส่วน (%)</th>
+                            <th>ลบ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="member in form.members">
+                            <td><input type="text" class="form-control" ng-model="member.name"></td>
+                            <td><input type="text" class="form-control" ng-model="member.department"></td>
+                            <td><input type="text" class="form-control" ng-model="member.faculty"></td>
+                            <td><input type="text" class="form-control" ng-model="member.position"></td>
+                            <td><input type="number" step="0.01" class="form-control" ng-model="member.percent"></td>
+                            <td><button type="button" class="btn btn-danger btn-sm"
+                                    ng-click="removeMember($index)">ลบ</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-secondary mb-4" ng-click="addMember()">+ เพิ่มผู้ร่วมวิจัย</button>
+
+            <div class="form-group">
+                <label>งบประมาณที่ได้รับ:</label>
+                <input type="number" class="form-control" ng-model="form.budget"> บาท
+            </div>
+
+            <h5>กลุ่มเป้าหมาย</h5>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" ng-model="form.beneficiaries.citizen">
+                <label class="form-check-label">ประชาชนในพื้นที่</label>
+            </div>
+            <div class="form-check mb-4">
+                <input type="checkbox" class="form-check-input" ng-model="form.beneficiaries.gov">
+                <label class="form-check-label">หน่วยงานภาครัฐ</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">บันทึก</button>
+        </form>
+    </div>
+
+    <script>
+        // Make sure to load angular-messages if you're using ngMessages (recommended for better validation UX)
+        angular.module('researchApp', ['ngMessages'])
+            .controller('FormController', function ($scope) {
+                // Initialize the form data model
+                $scope.form = {
+                    projectNameTh: '',
+                    projectNameEn: '',
+                    contractNumber: '',
+                    budgetYear: '', // Initialize to empty string for default option
+                    university: '',
+
+                    researcherAffiliationType: 'internal',
+                    faculty: '',
+                    externalUniversityName: '',
+
+                    fundingSource: '',
+                    otherFundingSource: '',
+
+                    role: {
+                        selected: '',
+                    },
+                    budget: 0,
+
+                    members: [
+                        { name: '', department: '', faculty: '', position: '', percent: 0 }
+                    ],
+
+                    beneficiaries: {
+                        citizen: false,
+                        gov: false
+                    }
+                };
+
+                // --- START: Logic to Generate Buddha Years for Dropdown ---
+                // Get current Christian Era (CE) year
+                const currentCEYear = new Date().getFullYear();
+
+                // Convert to Buddha Era (B.E.) year
+                // Thailand typically uses CE year + 543 for the Buddhist Era
+                const currentBuddhaYear = currentCEYear + 543;
+
+                $scope.budgetYears = [];
+                // Calculate the start and end year for the dropdown range
+                const startYear = currentBuddhaYear - 5;
+                const endYear = currentBuddhaYear + 5;
+
+                // Populate the array with years within the calculated range
+                for (let year = startYear; year <= endYear; year++) {
+                    $scope.budgetYears.push(year);
+                }
+                // --- END: Logic to Generate Buddha Years for Dropdown ---
+
+
+                $scope.fundingSources = [
+                    { label: 'สำนักงานการวิจัยแห่งชาติ (วช.)', value: 'NRCT' },
+                    { label: 'สำนักงานนวัตกรรมแห่งชาติ (NIA)', value: 'NIA' },
+                    { label: 'สำนักงานพัฒนาการวิจัยการเกษตร (สวก.)', value: 'ARDA' },
+                    { label: 'สถาบันวิจัยระบบสาธารณสุข (สวรส.)', value: 'HSRI' },
+                    { label: 'หน่วยบริหารและจัดการทุนด้านการพัฒนาระดับพื้นที่ (บพท.)', value: 'PMU_A' },
+                    { label: 'หน่วยบริหารและจัดการทุนด้านการพัฒนากำลังคน และทุนด้านการพัฒนาสถาบันอุดมศึกษา การวิจัยและสร้างนวัตกรรม (บพค.)', value: 'PMU_B' },
+                    { label: 'หน่วยบริหารและจัดการทุนด้านการเพิ่มความสามารถในการแข่งขันของประเทศ (บพข.)', value: 'PMU_C' },
+                    { label: 'สถาบันวัคซีนแห่งชาติ', value: 'NVI' },
+                    { label: 'ศูนย์ความเป็นเลิศด้านชีววิทยาศาสตร์ (องค์การมหาชน) (TCELS)', value: 'TCELS' }
+                ];
+
+                $scope.roles = [
+                    { label: 'หัวหน้าโครงการวิจัย', value: 'หัวหน้าโครงการ', percent: 0 },
+                    { label: 'ผู้ร่วมวิจัย', value: 'ผู้ร่วมวิจัย', percent: 0 },
+                    { label: 'ที่ปรึกษา', value: 'ที่ปรึกษา', percent: 0 },
+                    { label: 'อื่นๆ ระบุ', value: 'อื่นๆ', percent: 0, otherRoleText: '' }
+                ];
+
+                $scope.faculties = [
+                    "คณะเกษตรศาสตร์", "คณะพยาบาลศาสตร์", "คณะแพทยศาสตร์", "คณะวิทยาการจัดการ",
+                    "คณะวิทยาศาสตร์และเทคโนโลยี", "คณะวิศวกรรมศาสตร์", "คณะศิลปศาสตร์",
+                    "วิทยาลัยเทคนิคนราธิวาส", "วิทยาลัยการอาชีพตากใบ", "วิทยาลัยเกษตรและเทคโนโลยีนราธิวาส",
+                    "สถาบันอิสลามและอาหรับศึกษา", "สำนักงานอธิการบดี มหาวิทยาลัยนราธิวาสราชนครินทร์"
+                ];
+
+                $scope.addMember = function () {
+                    $scope.form.members.push({ name: '', department: '', faculty: '', position: '', percent: 0 });
+                };
+
+                $scope.removeMember = function (index) {
+                    $scope.form.members.splice(index, 1);
+                };
+
+                $scope.submitForm = function () {
+                    // Check if the form is valid before processing
+                    if ($scope.researchForm.$invalid) {
+                        alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
+                        return;
+                    }
+
+                    let totalPercent = 0;
+
+                    const selectedRole = $scope.roles.find(role => role.value === $scope.form.role.selected);
+                    if (selectedRole) {
+                        totalPercent += Number(selectedRole.percent || 0);
+                    }
+
+                    $scope.form.members.forEach(member => {
+                        totalPercent += Number(member.percent || 0);
+                    });
+
+                    if (totalPercent > 100) {
+                        alert("เปอร์เซ็นต์รวมของบทบาทและนักวิจัยทั้งหมดต้องไม่เกิน 100%");
+                        return;
+                    }
+
+                    const dataToSubmit = angular.copy($scope.form);
+
+                    // Data Cleanup and Consolidation for Submission
+                    if (dataToSubmit.researcherAffiliationType === 'internal') {
+                        delete dataToSubmit.externalUniversityName;
+                    } else if (dataToSubmit.researcherAffiliationType === 'external') {
+                        delete dataToSubmit.faculty;
+                    }
+
+                    if (dataToSubmit.fundingSource !== 'other') {
+                        delete dataToSubmit.otherFundingSource;
+                    }
+
+                    delete dataToSubmit.role;
+                    dataToSubmit.selectedRole = selectedRole ? {
+                        name: selectedRole.value,
+                        percent: selectedRole.percent,
+                        otherRoleText: selectedRole.otherRoleText
+                    } : null;
+
+                    console.log("Form Data for Submission:", dataToSubmit);
+                    alert("ข้อมูลถูกส่งเรียบร้อยแล้ว! ตรวจสอบข้อมูลใน Console");
+
+                    // In a real application, you would send `dataToSubmit` to your backend
+                    // using AngularJS $http service, e.g.:
+                    /*
+                    $http.post('/api/submitFormData', dataToSubmit)
+                        .then(function(response) {
+                            console.log('Success:', response.data);
+                            alert('ข้อมูลถูกบันทึกสำเร็จ!');
+                        })
+                        .catch(function(error) {
+                            console.error('Error:', error);
+                            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                        });
+                    */
+                };
+            });
+    </script>
+</body>
+
+</html>
